@@ -7,11 +7,12 @@ import operator
  
 importlib.reload(sys)
 
-from pdfminer.pdfparser import  PDFParser,PDFDocument
+from pdfminer.pdfparser import  PDFParser
+from pdfminer.pdfdocument import PDFDocument
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.converter import PDFPageAggregator
 from pdfminer.layout import LTTextBoxHorizontal,LAParams,LTChar
-from pdfminer.pdfinterp import PDFTextExtractionNotAllowed
+#from pdfminer.pdfinterp import PDFTextExtractionNotAllowed
  
 
 def parsing_content(src,id):
@@ -23,7 +24,7 @@ def parsing_content(src,id):
     #用文件对象创建一个PDF文档分析器
     parser = PDFParser(fp)
     #创建一个PDF文档
-    doc = PDFDocument()
+    doc = PDFDocument(parser)
     #连接分析器，与文档对象
     parser.set_document(doc)
     doc.set_parser(parser)
@@ -33,7 +34,7 @@ def parsing_content(src,id):
  
     #检测文档是否提供txt转换，不提供就忽略
     if not doc.is_extractable:
-        raise PDFTextExtractionNotAllowed
+        raise 
     else:
         #创建PDF，资源管理器，来共享资源
         rsrcmgr = PDFResourceManager()
