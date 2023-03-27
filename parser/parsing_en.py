@@ -131,58 +131,45 @@ def chaptering(textline_li):
     title_pattern_str = ""
     splited_content = []
     title_set = set()
-    chapter_title = "概述"
-    chapter = {"title": chapter_title, "content": []}
-    pattern = re.compile(
-        r"^[\(\[\u7B2C\uFF08\u3010]*[\d一二三四五六七八九十壹贰叁肆伍陆柒捌玖拾]{1,2}[\)\]\uFF09\u3011\.|、| ]+[\u4e00-\u9fa5]+"
-    )
-    no_pattern = re.compile(r".*[\u5E74|\u6708|\u65E5|英寸]+.*")  # 年月日
-    # num_pattern = re.compile(r'[\d一二三四五六七八九十壹贰叁肆伍陆柒捌玖拾]+')
-    for tl in textline_li:
-        pattern_result = pattern.match(tl.get_text())
-        # 章节标题
-        if pattern_result != None:
-            if len(tl.get_text()) < 30:
-                no_pattern_result = no_pattern.match(pattern_result.group(0))
-                if no_pattern_result == None:
-                    splited_content.append(chapter)
-                    # 新建chapter
-                    chapter_title = pattern_result.group(0)
-                    chapter = {"title": chapter_title, "content": []}
-                    if chapter_title in title_set:
-                        # 去除已出现过标题所在的章节
-                        for items in splited_content:
-                            if chapter_title in items:
-                                del items[chapter_title]
-                    else:
-                        title_set.add(chapter_title)
-                        title_pattern_str += (
-                            tl.get_text()
-                            .replace("/n", "")
-                            .replace(" ", "")
-                            .replace("[", "\[")
-                            .replace("]", "\]")
-                            .replace("(", "\(")
-                            .replace(")", "\)")
-                            + "|"
-                        )
-            else:
-                chapter["content"].append(tl)
-            # 章节内容
-        else:
-            chapter["content"].append(tl)
-
-    splited_content.append(chapter)
-
     chapters = []
-    for ch in splited_content:
-        chapter = {"title": ch["title"], "content": []}
-        for tl in ch["content"]:
-            txt = tl.get_text().replace("/n", "").replace(" ", "").replace(".", "")
-            txt_rate = len(tl.get_text()) - len(txt)
-            if len(re.findall(title_pattern_str[:-1], txt)) == 0 or txt_rate < 5:
-                chapter["content"].append(tl)
-        chapters.append(chapter)
+    ch = {}
+    ch["title"] = "overview"
+    ch["content"] = []
+
+    para = {}
+    para["title"] = ""
+    para["content"] = []
+    s = ""
+
+    # end_pattern = re.compile(r'^[\.|\?|\!]')
+    title_pattern = re.compile(r"^[0-9] [A-Z]")
+    sub_title_pattern = re.compile(r"^[0-9]\.[0-9] [A-Z]")
+
+    for tl in textline_li:
+        txt = tl.get_text().replace("\n", "")
+        if title_pattern.match(txt) and txt not in title_set:  # find chapter title
+            ch["content"].append(para)
+            chapters.append(ch)
+            ch = {}
+            ch["title"] = txt
+            ch["content"] = []
+            title_set.add(txt)
+        else:  # chapter content
+            if sub_title_pattern.match(txt) and txt not in title_set:  # 二级标题
+                ch["content"].append(para)
+                para = {}
+                para["title"] = txt
+                para["content"] = []
+                title_set.add(txt)
+
+            if txt.endswith("."):  # 一句话结束
+                para["content"].append(s)
+                s = ""
+
+            else:
+                s = s + txt
+
+    ch["content"].append(para)
 
     return chapters, title_pattern_str
 
@@ -388,8 +375,6 @@ def paragraphing(chapter, x0, x1, w, blank, title_pattern_str):
 
 
 if __name__ == "__main__":
-    pdf_path = (
-        "/com.docker.devenvironments.code/data/pdf_data/east_money-celuebaogao-1.pdf"
-    )
+    pdf_path = "/com.docker.devenvironments.code/data/pdf_data/LayoutLM.pdf"
     content = parsing_content(pdf_path)
     print(content)
