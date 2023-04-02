@@ -11,7 +11,7 @@ def extract_pdf_info(pdf_file):
         pdf_data = io.BytesIO(f.read())
 
     # Load the PDF document using PyMuPDF
-    doc = fitz.open(pdf_data)
+    doc = fitz.open(pdf_file)
 
     # Initialize the output dictionary
     output = {}
@@ -47,6 +47,6 @@ def extract_pdf_info(pdf_file):
     return json.dumps(output)
 
 
-pdf_file = 'example.pdf'
+pdf_file = '/Users/yusi/codes/thu/pdf2json/data/pdf_data/LayoutLM.pdf'
 pdf_info = extract_pdf_info(pdf_file)
 print(pdf_info)
